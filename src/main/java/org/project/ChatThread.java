@@ -2,6 +2,7 @@ package org.project;
 
 import java.io.*;
 import java.net.Socket;
+import java.nio.charset.StandardCharsets;
 import java.util.Map;
 
 public class ChatThread implements Runnable{
@@ -29,11 +30,30 @@ public class ChatThread implements Runnable{
             InputStream is = socket.getInputStream();
             BufferedReader br = new BufferedReader(new InputStreamReader(is));
             while(true) {
+                // send user list
+                StringBuilder usersList = new StringBuilder();
+                for (String user : users.keySet()) {
+                    usersList.append(user).append(",");
+                }
+                System.out.println(usersList);
+                // send users as an string object using object output stream not printwriter
+                OutputStream os = socket.getOutputStream();
+                ObjectOutputStream oos = new ObjectOutputStream(os);
+                oos.writeObject(usersList.toString());
+                oos.flush();
+                // send message
                 String receivedMsg = br.readLine();
                 String[] split = receivedMsg.split("=>");
                 System.out.println(receivedMsg);
+                if(userName.equals(split[1])) continue;
                 sendMessage(userName, split[0], split[1]);
+
+
+
             }
+
+
+
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
